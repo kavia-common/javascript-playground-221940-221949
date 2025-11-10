@@ -2,6 +2,12 @@
 
 A lightweight React + Vite SPA providing a minimal JavaScript playground.
 
+## Theme (Light/Dark)
+
+- Use the "Dark Mode"/"Light Mode" button in the header to toggle themes.
+- Your preference is saved to localStorage and will be automatically applied on next visit.
+- On first load, the app respects your system preference (prefers-color-scheme).
+
 ## Scripts
 
 - npm run dev — start Vite dev server on 0.0.0.0:3000 (BROWSER=none)

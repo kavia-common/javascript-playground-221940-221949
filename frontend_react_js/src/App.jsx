@@ -7,6 +7,10 @@ App
  - left: code editor textarea + run/clear buttons
  - right: output panel that displays console.log and errors
  Executes code inside a sandboxed iframe and communicates via postMessage.
+
+ Theme:
+ - Supports light and dark themes using CSS variables.
+ - Theme is persisted in localStorage and respects prefers-color-scheme on first load.
 */
 export default function App() {
   const [code, setCode] = useState(`// Welcome to the JavaScript Playground!
@@ -22,6 +26,26 @@ console.log(greet("world"));
 `);
   const [logs, setLogs] = useState([]);
   const iframeRef = useRef(null);
+
+  // Theme setup
+  const THEME_KEY = 'theme';
+  const getPreferredTheme = () => {
+    const stored = localStorage.getItem(THEME_KEY);
+    if (stored === 'dark' || stored === 'light') return stored;
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return prefersDark ? 'dark' : 'light';
+  };
+  const [theme, setTheme] = useState(getPreferredTheme);
+
+  // Apply theme to documentElement so CSS can respond
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try { localStorage.setItem(THEME_KEY, theme); } catch (_) {}
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
+  };
 
   // Create a sandboxed HTML for the iframe each run.
   const sandboxHtml = useMemo(() => {
@@ -88,6 +112,29 @@ console.log(greet("world"));
 <html>
   <head>
     <meta charset="utf-8" />
+    <style>
+      :root{
+        --color-primary:#3b82f6;
+        --color-secondary:#64748b;
+        --color-success:#06b6d4;
+        --color-error:#EF4444;
+        --color-bg:#f9fafb;
+        --color-surface:#ffffff;
+        --color-text:#111827;
+      }
+      [data-theme="dark"]{
+        --color-bg:#0b1020;
+        --color-surface:#0f172a;
+        --color-text:#e5e7eb;
+        --color-secondary:#94a3b8;
+      }
+      html, body {
+        background: var(--color-bg);
+        color: var(--color-text);
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      }
+    </style>
     <script>
       ${interceptScript}
     </script>
@@ -141,6 +188,16 @@ console.log(greet("world"));
         <div className="header-inner">
           <div className="logo" aria-hidden="true"></div>
           <div className="title">JavaScript Playground</div>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              className="button secondary"
+              onClick={toggleTheme}
+              title="Toggle theme"
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -175,7 +232,7 @@ console.log(greet("world"));
               logs.map((item, idx) => {
                 const color =
                   item.type === 'error' ? 'var(--color-error)' :
-                  item.level === 'warn' ? '#ca8a04' :
+                  item.level === 'warn' ? 'var(--color-warn, #ca8a04)' :
                   item.level === 'info' ? 'var(--color-success)' :
                   'var(--color-text)';
                 return (
@@ -190,7 +247,7 @@ console.log(greet("world"));
       </main>
 
       <footer className="footer">
-        Built with React and Vite. Theme: primary #3b82f6, secondary #64748b, success #06b6d4, error #EF4444.
+        Built with React and Vite. Supports light and dark themes with CSS variables.
       </footer>
 
       {/* Hidden iframe used for sandboxed code execution */}
