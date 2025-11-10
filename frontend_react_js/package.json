@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "start": "vite",
+    "start": "HOST=${HOST:-0.0.0.0} PORT=${PORT:-${REACT_APP_PORT:-3001}} BROWSER=none vite",
     "build": "vite build",
     "preview": "vite preview"
   },
