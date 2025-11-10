@@ -1,104 +1,224 @@
-/* CSS Variables for Theme Management */
-:root {
-  /* Light theme colors */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --text-primary: #282c34;
-  --text-secondary: #61dafb;
-  --border-color: #e9ecef;
-  --button-bg: #007bff;
-  --button-text: #ffffff;
-}
+@import './assets/styles/variables.css';
 
-[data-theme="dark"] {
-  /* Dark theme colors */
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #282c34;
-  --text-primary: #ffffff;
-  --text-secondary: #61dafb;
-  --border-color: #404040;
-  --button-bg: #0056b3;
-  --button-text: #ffffff;
-}
-
-.App {
-  text-align: center;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+.app-root {
   min-height: 100vh;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-secondary-200);
+  padding: 12px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+.app-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-title h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.brand-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--color-primary);
+  border-radius: 9999px;
+  box-shadow: 0 0 0 4px rgba(59,130,246,0.15);
+}
+
+.status-pill {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-secondary-200);
+  background: var(--color-surface);
+}
+
+.status-ready { color: var(--color-secondary-700); }
+.status-running { color: var(--color-primary); border-color: var(--color-primary-300); }
+.status-completed { color: var(--color-success); border-color: var(--color-success-300); }
+.status-error { color: var(--color-error); border-color: var(--color-error-300); }
+
+.app-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 12px;
+}
+
+@media (max-width: 960px) {
+  .app-main {
+    grid-template-columns: 1fr;
   }
 }
 
-.App-header {
-  background-color: var(--bg-secondary);
-  min-height: 100vh;
+.pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-secondary-200);
+  background: var(--color-surface);
+}
+
+.pane-header h2 {
+  font-size: 14px;
+  margin: 0;
+  color: var(--color-secondary-700);
+}
+
+.editor-pane, .output-pane {
+  background: var(--color-surface);
+  border: 1px solid var(--color-secondary-200);
+  border-radius: 8px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: var(--text-primary);
-  transition: background-color 0.3s ease;
-  position: relative;
+  min-height: 360px;
 }
 
-.App-link {
-  color: var(--text-secondary);
-  transition: color 0.3s ease;
+.controls {
+  display: flex;
+  gap: 8px;
 }
 
-.theme-toggle {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background-color: var(--button-bg);
-  color: var(--button-text);
-  border: none;
-  border-radius: 8px;
-  padding: 10px 20px;
-  font-size: 14px;
+.btn {
+  outline: none;
+  border: 1px solid transparent;
+  padding: 8px 12px;
+  border-radius: 6px;
   font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.05s ease, box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
-.theme-toggle:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  opacity: 0.9;
+.btn:active {
+  transform: translateY(1px);
 }
 
-.theme-toggle:active {
-  transform: translateY(0);
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 6px rgba(59,130,246,0.25);
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.btn-primary:hover {
+  background: #2563eb;
+  border-color: #2563eb;
 }
 
-/* Responsive design for mobile */
-@media (max-width: 768px) {
-  .theme-toggle {
-    top: 10px;
-    right: 10px;
-    padding: 8px 16px;
-    font-size: 12px;
-  }
+.btn-secondary {
+  background: var(--color-secondary-100);
+  color: var(--color-secondary-800);
+  border-color: var(--color-secondary-200);
+}
+
+.btn-secondary:hover {
+  background: var(--color-secondary-200);
+}
+
+.hint {
+  padding: 8px 12px 12px 12px;
+  color: var(--color-secondary-700);
+  font-size: 12px;
+}
+
+/* Code editor */
+.editor-wrapper {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  align-items: stretch;
+}
+
+.editor-linenos {
+  background: var(--color-secondary-100);
+  color: var(--color-secondary-700);
+  border-right: 1px solid var(--color-secondary-200);
+  padding: 8px 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 13px;
+  line-height: 20px;
+  user-select: none;
+  text-align: right;
+  white-space: pre;
+}
+
+.editor-textarea {
+  width: 100%;
+  min-height: 280px;
+  resize: vertical;
+  border: none;
+  outline: none;
+  padding: 8px 10px;
+  font-size: 13px;
+  line-height: 20px;
+  background: transparent;
+  color: var(--color-text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.iframe-host {
+  width: 0; height: 0; overflow: hidden; border: 0;
+}
+
+/* Console */
+.console {
+  padding: 8px 12px;
+  overflow: auto;
+  flex: 1;
+  background: var(--color-surface);
+}
+
+.console-entry {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  border-bottom: 1px dashed var(--color-secondary-200);
+  padding: 6px 0;
+}
+
+.console-entry:last-child {
+  border-bottom: none;
+}
+
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 6px;
+  border-radius: 4px;
+  color: white;
+  min-width: 48px;
+  text-align: center;
+}
+
+.badge-log { background: var(--color-secondary-600); }
+.badge-warn { background: #f59e0b; }
+.badge-error { background: var(--color-error); }
+.badge-status { background: var(--color-primary); }
+
+.console-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 13px;
+}
+
+.console-time {
+  margin-left: auto;
+  color: var(--color-secondary-600);
+  font-size: 11px;
 }
