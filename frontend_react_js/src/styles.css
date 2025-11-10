@@ -1,0 +1,16 @@
+:root {
+  --primary: #3b82f6;
+  --secondary: #64748b;
+  --success: #06b6d4;
+  --error: #EF4444;
+  --background: #f9fafb;
+  --surface: #ffffff;
+  --text: #111827;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body { background: var(--background); color: var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+button { font-weight: 600; }
+button:hover { filter: brightness(0.95); }
+textarea { outline: none; }
