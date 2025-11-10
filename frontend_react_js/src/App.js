@@ -1,29 +1,67 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './App.css';
 import './index.css';
-import CodeEditor from './components/CodeEditor';
-import OutputConsole from './components/OutputConsole';
+import EditorTabs from './components/EditorTabs';
+import ConsolePanel from './components/ConsolePanel';
+import { runPreview } from './utils/previewRunner';
 import { runInSandbox } from './utils/runSandbox';
+
+// Seed defaults
+const DEFAULT_HTML = `<!-- Minimal HTML boilerplate -->
+<div id="app">
+  <h1>Hello, Preview!</h1>
+  <p>Edit HTML, CSS, and JS, then Run/Preview.</p>
+</div>`;
+const DEFAULT_CSS = `body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; padding: 16px; }
+#app { border: 1px dashed #e5e7eb; padding: 12px; border-radius: 8px; }
+h1 { color: #111827; }
+p { color: #334155; }`;
+const DEFAULT_JS = `console.log('Hello from JS!');
+const app = document.getElementById('app');
+if (app) {
+  const el = document.createElement('div');
+  el.textContent = 'JS executed successfully.';
+  el.style.color = '#06b6d4';
+  app.appendChild(el);
+}`;
+
+// Keys for localStorage
+const LS_KEYS = {
+  html: 'preview_html',
+  css: 'preview_css',
+  js: 'preview_js',
+  autorun: 'preview_autorun',
+};
 
 // PUBLIC_INTERFACE
 function App() {
-  /** App state for editor, console messages, and run status */
-  const [code, setCode] = useState("console.log('Hello, JS Runner');");
+  // Load from localStorage if available
+  const [html, setHtml] = useState(() => localStorage.getItem(LS_KEYS.html) ?? DEFAULT_HTML);
+  const [css, setCss] = useState(() => localStorage.getItem(LS_KEYS.css) ?? DEFAULT_CSS);
+  const [js, setJs] = useState(() => localStorage.getItem(LS_KEYS.js) ?? DEFAULT_JS);
+
   const [messages, setMessages] = useState([]);
   const [status, setStatus] = useState('Ready');
-  const iframeContainerRef = useRef(null);
+  const [autoRun, setAutoRun] = useState(() => (localStorage.getItem(LS_KEYS.autorun) ?? 'true') === 'true');
+
+  const previewContainerRef = useRef(null);
   const cleanupRef = useRef(null);
+
+  // Persist to localStorage
+  useEffect(() => { localStorage.setItem(LS_KEYS.html, String(html)); }, [html]);
+  useEffect(() => { localStorage.setItem(LS_KEYS.css, String(css)); }, [css]);
+  useEffect(() => { localStorage.setItem(LS_KEYS.js, String(js)); }, [js]);
+  useEffect(() => { localStorage.setItem(LS_KEYS.autorun, String(autoRun)); }, [autoRun]);
 
   // Append message helper
   const appendMessage = useCallback((msg) => {
     setMessages((prev) => [...prev, { ...msg, time: msg.time ?? new Date().toISOString() }]);
   }, []);
 
-  const clearOutput = useCallback(() => {
-    setMessages([]);
-  }, []);
+  const clearConsole = useCallback(() => setMessages([]), []);
 
-  const onRun = useCallback(async () => {
+  // Run/Preview combined flow (HTML/CSS/JS)
+  const onRunPreview = useCallback(() => {
     setStatus('Running…');
     // Clear previous sandbox if any
     if (typeof cleanupRef.current === 'function') {
@@ -31,25 +69,22 @@ function App() {
       cleanupRef.current = null;
     }
     // Emit status
-    appendMessage({ type: 'status', text: 'Execution started' });
+    appendMessage({ type: 'status', text: 'Preview started' });
 
     try {
-      const { cleanup } = runInSandbox({
-        container: iframeContainerRef.current,
-        code,
-        onMessage: (m) => {
-          appendMessage(m);
-        },
+      const { cleanup } = runPreview({
+        container: previewContainerRef.current,
+        html,
+        css,
+        js,
+        onMessage: (m) => appendMessage(m),
         onComplete: () => {
           setStatus('Completed');
-          appendMessage({ type: 'status', text: 'Execution completed' });
+          appendMessage({ type: 'status', text: 'Preview completed' });
         },
         onTimeout: () => {
           setStatus('Error');
-          appendMessage({
-            type: 'error',
-            text: 'Execution timed out after 5s and was terminated for safety.'
-          });
+          appendMessage({ type: 'error', text: 'Preview timed out after 5s.' });
         },
         onError: (err) => {
           setStatus('Error');
@@ -61,20 +96,20 @@ function App() {
       setStatus('Error');
       appendMessage({ type: 'error', text: err?.message || String(err) });
     }
-  }, [appendMessage, code]);
+  }, [appendMessage, html, css, js]);
 
-  // Keyboard shortcut: Ctrl/Cmd + Enter to run
+  // Keyboard shortcut: Ctrl/Cmd+Enter to run
   useEffect(() => {
     const handler = (e) => {
       const isModifier = e.ctrlKey || e.metaKey;
       if (isModifier && e.key === 'Enter') {
         e.preventDefault();
-        onRun();
+        onRunPreview();
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [onRun]);
+  }, [onRunPreview]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -97,7 +132,7 @@ function App() {
       <header className="app-header">
         <div className="app-title">
           <span className="brand-dot" />
-          <h1>JavaScript Runner</h1>
+          <h1>HTML/CSS/JS Previewer</h1>
         </div>
         <div className={`status-pill ${headerStatusColor}`} aria-live="polite">
           {status}
@@ -105,30 +140,26 @@ function App() {
       </header>
 
       <main className="app-main">
-        <section className="editor-pane">
-          <div className="pane-header">
-            <h2>Editor</h2>
-            <div className="controls">
-              <button className="btn btn-secondary" onClick={clearOutput} aria-label="Clear console output">
-                Clear
-              </button>
-              <button className="btn btn-primary" onClick={onRun} aria-label="Run code (Ctrl/Cmd+Enter)">
-                Run
-              </button>
-            </div>
-          </div>
-          <CodeEditor value={code} onChange={setCode} onRun={onRun} />
-          <div className="hint">
-            Press Ctrl/Cmd + Enter to run
-          </div>
+        <section className="editor-pane" aria-label="Editors pane">
+          <EditorTabs
+            htmlValue={html}
+            cssValue={css}
+            jsValue={js}
+            onHtmlChange={setHtml}
+            onCssChange={setCss}
+            onJsChange={setJs}
+            onRun={onRunPreview}
+            autoRun={autoRun}
+            setAutoRun={setAutoRun}
+          />
         </section>
 
-        <section className="output-pane">
+        <section className="output-pane" aria-label="Output and preview pane">
           <div className="pane-header">
-            <h2>Output</h2>
+            <h2>Preview</h2>
           </div>
-          <div className="iframe-host" ref={iframeContainerRef} aria-hidden="true" />
-          <OutputConsole messages={messages} />
+          <div ref={previewContainerRef} style={{ background: 'var(--color-surface)', borderTop: '1px solid var(--color-secondary-200)' }} />
+          <ConsolePanel messages={messages} onClear={clearConsole} />
         </section>
       </main>
     </div>

@@ -1,0 +1,49 @@
+@import '../assets/styles/variables.css';
+
+.editor-tabs-root {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.tabs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tabs-group {
+  display: flex;
+  gap: 6px;
+}
+
+.tab {
+  background: var(--color-secondary-100);
+  color: var(--color-secondary-800);
+  border: 1px solid var(--color-secondary-200);
+  border-bottom-color: var(--color-secondary-200);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab-active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 6px rgba(59,130,246,0.20);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--color-primary-300);
+  outline-offset: 2px;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--color-secondary-800);
+}

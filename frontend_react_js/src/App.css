@@ -90,6 +90,10 @@
   min-height: 360px;
 }
 
+.output-pane > div[role="log"] {
+  border-top: 1px solid var(--color-secondary-200);
+}
+
 .controls {
   display: flex;
   gap: 8px;
