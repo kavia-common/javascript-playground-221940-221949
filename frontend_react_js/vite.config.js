@@ -23,19 +23,21 @@ function healthcheckPlugin(path = '/healthz') {
 export default defineConfig(() => {
   const host = process.env.HOST || '0.0.0.0';
   const port = Number(process.env.PORT || 3000);
+  const healthPath = process.env.REACT_APP_HEALTHCHECK_PATH || '/healthz';
 
   return {
-    plugins: [react(), healthcheckPlugin(process.env.REACT_APP_HEALTHCHECK_PATH || '/healthz')],
+    plugins: [react(), healthcheckPlugin(healthPath)],
     server: {
-      host: host === '0.0.0.0' ? true : host, // true means 0.0.0.0
+      host: host === '0.0.0.0' ? true : host,
       port,
-      strictPort: true
+      strictPort: true,
+      open: false
     },
     preview: {
       host: true,
-      port: port
+      port,
+      open: false
     },
-    // Make sure env vars prefixed with REACT_APP_ are loaded
     envPrefix: ['REACT_APP_', 'VITE_'],
     logLevel: 'info'
   };

@@ -6,7 +6,7 @@ export default function App() {
    * A simple JavaScript playground with code editor, run button, and output area.
    * Runs code in a sandboxed iframe context without a backend.
    */
-  const [code, setCode] = useState('// Write JavaScript here\\nconsole.log(\"Hello from the playground!\");');
+  const [code, setCode] = useState('// Write JavaScript here\\nconsole.log("Hello from the playground!");');
   const [output, setOutput] = useState('');
   const iframeRef = useRef(null);
 
@@ -23,7 +23,7 @@ export default function App() {
             <title>Sandbox</title>
           </head>
           <body>
-            <pre id="out" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \\"Liberation Mono\\", \\"Courier New\\", monospace;"></pre>
+            <pre id="out" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;"></pre>
             <script>
               (function(){
                 const out = document.getElementById('out');
@@ -62,7 +62,7 @@ export default function App() {
   useEffect(() => {
     const handler = (e) => {
       if (e.data && e.data.type === 'sandbox-log') {
-        setOutput(prev => prev + e.data.message + '\\n');
+        setOutput(prev => prev + e.data.message + '\n');
       }
     };
     window.addEventListener('message', handler);

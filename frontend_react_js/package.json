@@ -4,10 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "start": "HOST=${HOST:-0.0.0.0} PORT=${PORT:-3000} BROWSER=none vite",
+    "start": "vite",
     "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0 --port 3000"
+    "preview": "vite preview"
   },
   "dependencies": {
     "react": "^18.3.1",
