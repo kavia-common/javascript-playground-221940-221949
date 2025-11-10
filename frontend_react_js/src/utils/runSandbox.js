@@ -8,6 +8,11 @@ import { iframeCaptureScript } from './captureConsole';
  * - Communication via postMessage
  * - Watchdog: 5s timeout triggers onTimeout and reloads iframe
  * - Returns cleanup function to remove iframe and listeners
+ *
+ * Cross-origin safety:
+ * - Does not access parent/other frame documents.
+ * - Feature-detects iframe document accessibility; uses srcdoc when needed.
+ * - Validates postMessage source and origin (same-origin only).
  */
 export function runInSandbox({ container, code, onMessage, onComplete, onTimeout, onError }) {
   if (!container) throw new Error('Sandbox container not available');
@@ -16,21 +21,24 @@ export function runInSandbox({ container, code, onMessage, onComplete, onTimeout
     container.removeChild(container.firstChild);
   }
 
-  // Create iframe
+  // Create iframe (sandboxed)
   const iframe = document.createElement('iframe');
-  iframe.setAttribute('sandbox', 'allow-scripts');
+  iframe.setAttribute('sandbox', 'allow-scripts'); // no same-origin, no top-navigation
   iframe.style.display = 'none';
   container.appendChild(iframe);
 
-  const origin = window.origin || '*';
   const channelId = `chan_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-
   let completed = false;
+
+  // Determine our allowed origin for message validation
+  const allowedOrigin = window.location.origin;
+
   const watchdogMs = 5000;
   const timeoutId = setTimeout(() => {
     if (completed) return;
     try {
-      // Attempt to reload/cleanup iframe on hang
+      // Attempt to reload/cleanup iframe on hang without probing its document
+      iframe.removeAttribute('srcdoc');
       iframe.src = 'about:blank';
     } catch {}
     if (typeof onTimeout === 'function') onTimeout();
@@ -38,8 +46,13 @@ export function runInSandbox({ container, code, onMessage, onComplete, onTimeout
 
   const messageHandler = (event) => {
     try {
-      // Only accept messages from our iframe
-      if (event.source !== iframe.contentWindow) return;
+      // Only accept messages from our iframe, and from same-origin
+      if (!iframe.contentWindow || event.source !== iframe.contentWindow) return;
+      if (event.origin && event.origin !== 'null' && event.origin !== allowedOrigin) {
+        // Ignore cross-origin events (origin 'null' occurs for sandboxed about:blank/srcdoc)
+        return;
+      }
+
       const data = event.data;
       if (!data || data.channelId !== channelId) return;
 
@@ -63,8 +76,7 @@ export function runInSandbox({ container, code, onMessage, onComplete, onTimeout
 
   window.addEventListener('message', messageHandler);
 
-  // Build iframe document with capture script and user code
-  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  // Build iframe HTML (same-frame only; no parent.document access inside)
   const html = `
 <!doctype html>
 <html>
@@ -77,15 +89,19 @@ export function runInSandbox({ container, code, onMessage, onComplete, onTimeout
 ${iframeCaptureScript}
       try {
         const __channelId = ${JSON.stringify(channelId)};
-        const __parent = window.parent;
+        // post to parent safely without touching parent.document
         const __safePost = (msg) => {
-          try { __parent.postMessage({ ...msg, channelId: __channelId }, '*'); } catch(e) {}
+          try { window.parent && window.parent.postMessage({ ...msg, channelId: __channelId }, '*'); } catch(e) {}
         };
 
         // Install capture hooks
         (function(){
-          const cap = createConsoleCapture(__channelId);
-          cap.install();
+          try {
+            const cap = createConsoleCapture(__channelId);
+            cap.install();
+          } catch (e) {
+            try { __safePost({ type: 'error', payload: String(e && e.message ? e.message : e) }); } catch (_) {}
+          }
         })();
 
         // Execute user code
@@ -100,7 +116,7 @@ ${iframeCaptureScript}
         })();
       } catch (err) {
         try {
-          window.parent.postMessage({ type: 'error', payload: String(err && err.message ? err.message : err), channelId: ${JSON.stringify(channelId)} }, '*');
+          window.parent && window.parent.postMessage({ type: 'error', payload: String(err && err.message ? err.message : err), channelId: ${JSON.stringify(channelId)} }, '*');
         } catch(e) {}
       }
     </script>
@@ -108,14 +124,34 @@ ${iframeCaptureScript}
 </html>
   `.trim();
 
+  // Safely write content into iframe:
+  // Prefer srcdoc which avoids directly touching contentDocument of a sandboxed frame.
+  let wrote = false;
   try {
-    doc.open();
-    doc.write(html);
-    doc.close();
-  } catch (err) {
-    clearTimeout(timeoutId);
-    window.removeEventListener('message', messageHandler);
-    if (typeof onError === 'function') onError(err);
+    if ('srcdoc' in iframe) {
+      iframe.srcdoc = html;
+      wrote = true;
+    }
+  } catch {
+    // ignore and fallback to doc.write
+  }
+
+  if (!wrote) {
+    try {
+      // Feature-detect accessible document; avoid cross-origin violations
+      const doc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document);
+      if (!doc) throw new Error('Sandbox document not accessible');
+      doc.open();
+      doc.write(html);
+      doc.close();
+    } catch (err) {
+      clearTimeout(timeoutId);
+      window.removeEventListener('message', messageHandler);
+      if (typeof onError === 'function') onError(err);
+      // Best-effort cleanup
+      try { if (iframe && iframe.parentNode) iframe.parentNode.removeChild(iframe); } catch {}
+      return { cleanup: () => {} };
+    }
   }
 
   const cleanup = () => {
