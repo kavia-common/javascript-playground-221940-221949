@@ -18,11 +18,11 @@ A simple web-based JavaScript runner where users can write and execute JavaScrip
    npm install
    ```
 
-2. Start the development server (port 3000):
+2. Start the development server (port 3000, bound to 0.0.0.0):
    ```
    npm start
    ```
-   This opens http://localhost:3000
+   The dev server will listen on http://0.0.0.0:3000 (reachable via http://localhost:3000 on the same machine).
 
 3. Build for production:
    ```
