@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Web-based JavaScript runner with light/dark theme toggle",
+  "homepage": ".",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
