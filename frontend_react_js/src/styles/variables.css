@@ -1,0 +1,194 @@
+:root {
+  /* Accent colors per style guide */
+  --color-primary: #3b82f6; /* blue-500 */
+  --color-success: #06b6d4; /* cyan-500 */
+  --color-secondary: #64748b; /* slate-500 */
+  --color-error: #EF4444;
+
+  /* Light theme tokens (default) */
+  --bg: #f9fafb;
+  --surface: #ffffff;
+  --text: #111827;
+
+  --muted-text: #374151;
+  --border: #e5e7eb;
+
+  --editor-bg: #0b1020; /* code editor dark-ish bg to emphasize code even in light */
+  --editor-text: #e5e7eb;
+
+  --button-bg: var(--color-primary);
+  --button-bg-hover: #2563eb;
+  --button-text: #ffffff;
+
+  --output-bg: #0f172a;
+  --output-text: #e5e7eb;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+[data-theme="dark"] {
+  /* Keep accents as specified */
+  --color-primary: #3b82f6;
+  --color-success: #06b6d4;
+  --color-secondary: #94a3b8;
+  --color-error: #f87171;
+
+  /* Dark theme tokens */
+  --bg: #0b1220;
+  --surface: #0f172a;
+  --text: #e5e7eb;
+
+  --muted-text: #cbd5e1;
+  --border: #1f2937;
+
+  --editor-bg: #0b1220;
+  --editor-text: #e5e7eb;
+
+  --button-bg: #1d4ed8; /* slightly deeper variant in dark */
+  --button-bg-hover: #1e40af;
+  --button-text: #ffffff;
+
+  --output-bg: #0b1220;
+  --output-text: #e5e7eb;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.35);
+  --shadow-md: 0 6px 18px rgba(0,0,0,0.35);
+}
+
+/* Base reset and layout helpers */
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  background: var(--bg);
+  color: var(--text);
+}
+
+a { color: var(--color-primary); }
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.app-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  padding: 16px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
+.brand .badge {
+  font-size: 12px;
+  color: var(--button-text);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-success));
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.button {
+  background: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  transition: background 0.2s ease, transform 0.05s ease;
+}
+
+.button:hover {
+  background: var(--button-bg-hover);
+}
+
+.button:active {
+  transform: translateY(1px);
+}
+
+.button.secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.button.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.editor {
+  background: var(--editor-bg);
+  color: var(--editor-text);
+  border-radius: 10px;
+  padding: 12px;
+  min-height: 360px;
+  width: 100%;
+  border: 1px solid var(--border);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  outline: none;
+  resize: vertical;
+}
+
+.output {
+  background: var(--output-bg);
+  color: var(--output-text);
+  border-radius: 10px;
+  padding: 12px;
+  min-height: 120px;
+  border: 1px solid var(--border);
+  white-space: pre-wrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 14px;
+}
+
+.separator {
+  height: 1px;
+  background: var(--border);
+  margin: 10px 0;
+}
