@@ -14,13 +14,16 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     server: {
-      host: '0.0.0.0',
-      port,
+      host: true,            // 0.0.0.0
+      port: 3000,            // explicit default
       strictPort: true
     },
     preview: {
-      host: '0.0.0.0',
-      port
+      host: true,
+      port: 3000
+    },
+    build: {
+      sourcemap: env.REACT_APP_ENABLE_SOURCE_MAPS === 'true'
     },
     define: {
       // Expose commonly used env variables for client

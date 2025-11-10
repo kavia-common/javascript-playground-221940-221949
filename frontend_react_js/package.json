@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "BROWSER=none vite",
-    "start": "BROWSER=none vite",
+    "dev": "vite",
+    "start": "vite",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0 --port 3000"
   },
