@@ -6,6 +6,31 @@ import ConsolePanel from './components/ConsolePanel';
 import { runPreview } from './utils/previewRunner';
 import { runInSandbox } from './utils/runSandbox';
 
+/* Theme handling
+   - Uses localStorage('theme'): 'light' | 'dark' | 'system'
+   - On first load, respects prefers-color-scheme if no saved choice.
+   - Applies .dark class on <html> to switch CSS variables.
+*/
+const THEME_STORAGE_KEY = 'theme_choice';
+function getPreferredScheme() {
+  if (typeof window === 'undefined' || !window.matchMedia) return 'light';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+function readInitialTheme() {
+  const saved = localStorage.getItem(THEME_STORAGE_KEY);
+  if (saved === 'light' || saved === 'dark') return saved;
+  // default to system preference
+  return getPreferredScheme();
+}
+function applyThemeClass(theme) {
+  if (typeof document === 'undefined') return;
+  const html = document.documentElement;
+  const isDark = theme === 'dark';
+  html.classList.toggle('dark', isDark);
+  // Set color-scheme meta via attribute for form controls where applicable
+  html.style.colorScheme = isDark ? 'dark' : 'light';
+}
+
 // Seed defaults
 const DEFAULT_HTML = `<!-- Minimal HTML boilerplate -->
 <div id="app">
@@ -35,6 +60,39 @@ const LS_KEYS = {
 
 // PUBLIC_INTERFACE
 function App() {
+  // Theme state
+  const [theme, setTheme] = useState(() => {
+    const initial = readInitialTheme();
+    // apply immediately
+    applyThemeClass(initial);
+    return initial;
+  });
+
+  // Sync theme to localStorage and DOM
+  useEffect(() => {
+    try { localStorage.setItem(THEME_STORAGE_KEY, theme); } catch {}
+    applyThemeClass(theme);
+  }, [theme]);
+
+  // Respond to OS theme changes if user hasn't explicitly chosen (i.e., stored theme missing)
+  useEffect(() => {
+    const saved = localStorage.getItem(THEME_STORAGE_KEY);
+    if (saved === 'light' || saved === 'dark') return; // respect explicit choice
+    const mql = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+    const listener = (e) => {
+      const next = e.matches ? 'dark' : 'light';
+      setTheme(next);
+    };
+    if (mql && mql.addEventListener) {
+      mql.addEventListener('change', listener);
+      return () => mql.removeEventListener('change', listener);
+    } else if (mql && mql.addListener) {
+      mql.addListener(listener);
+      return () => mql.removeListener(listener);
+    }
+    return () => {};
+  }, []);
+
   // Load from localStorage if available
   const [html, setHtml] = useState(() => localStorage.getItem(LS_KEYS.html) ?? DEFAULT_HTML);
   const [css, setCss] = useState(() => localStorage.getItem(LS_KEYS.css) ?? DEFAULT_CSS);
@@ -127,6 +185,10 @@ function App() {
     return 'status-error';
   }, [status]);
 
+  // Determine theme label/icon
+  const isDark = theme === 'dark';
+  const themeLabel = isDark ? 'Dark' : 'Light';
+
   return (
     <div className="app-root">
       <header className="app-header">
@@ -134,8 +196,18 @@ function App() {
           <span className="brand-dot" />
           <h1>HTML/CSS/JS Previewer</h1>
         </div>
-        <div className={`status-pill ${headerStatusColor}`} aria-live="polite">
-          {status}
+        <div className="controls" style={{ gap: 10 }}>
+          <button
+            className="btn btn-secondary"
+            aria-label="Toggle color theme"
+            title="Toggle theme"
+            onClick={() => setTheme(isDark ? 'light' : 'dark')}
+          >
+            {isDark ? '☾' : '☀'} Theme: {themeLabel}
+          </button>
+          <div className={`status-pill ${headerStatusColor}`} aria-live="polite">
+            {status}
+          </div>
         </div>
       </header>
 
@@ -158,7 +230,13 @@ function App() {
           <div className="pane-header">
             <h2>Preview</h2>
           </div>
-          <div ref={previewContainerRef} style={{ background: 'var(--color-surface)', borderTop: '1px solid var(--color-secondary-200)' }} />
+          <div
+            ref={previewContainerRef}
+            style={{
+              background: 'var(--color-surface)',
+              borderTop: '1px solid var(--color-secondary-200)'
+            }}
+          />
           <ConsolePanel messages={messages} onClear={clearConsole} />
         </section>
       </main>

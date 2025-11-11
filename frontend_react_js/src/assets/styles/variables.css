@@ -1,4 +1,5 @@
 :root {
+  /* Light theme (default) */
   --color-primary: #3b82f6;
   --color-primary-300: #93c5fd;
 
@@ -18,4 +19,53 @@
   --color-background: #f9fafb;
   --color-surface: #ffffff;
   --color-text: #111827;
+}
+
+/* Respect the user OS preference on first load: if dark, use dark palette.
+   App logic will toggle a .dark class on <html> for persisted user choice. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-primary: #60a5fa;
+    --color-primary-300: #93c5fd;
+
+    --color-secondary: #94a3b8;
+    --color-secondary-100: #0f172a; /* deeper slate for surfaces in dark */
+    --color-secondary-200: #1f2937;
+    --color-secondary-600: #94a3b8;
+    --color-secondary-700: #a1a1aa;
+    --color-secondary-800: #cbd5e1;
+
+    --color-success: #22d3ee;
+    --color-success-300: #67e8f9;
+
+    --color-error: #f87171;
+    --color-error-300: #fda4af;
+
+    --color-background: #0b1220; /* deep blue-black */
+    --color-surface: #111827;    /* slate-900 like */
+    --color-text: #e5e7eb;       /* zinc-200 */
+  }
+}
+
+/* Explicit dark mode override via .dark class on html element */
+html.dark {
+  --color-primary: #60a5fa;
+  --color-primary-300: #93c5fd;
+
+  --color-secondary: #94a3b8;
+  --color-secondary-100: #0f172a;
+  --color-secondary-200: #1f2937;
+  --color-secondary-600: #94a3b8;
+  --color-secondary-700: #a1a1aa;
+  --color-secondary-800: #cbd5e1;
+
+  --color-success: #22d3ee;
+  --color-success-300: #67e8f9;
+
+  --color-error: #f87171;
+  --color-error-300: #fda4af;
+
+  --color-background: #0b1220;
+  --color-surface: #111827;
+  --color-text: #e5e7eb;
 }

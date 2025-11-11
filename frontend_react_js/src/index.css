@@ -4,6 +4,10 @@
   color-scheme: light;
 }
 
+html.dark {
+  color-scheme: dark;
+}
+
 * { box-sizing: border-box; }
 
 html, body, #root {
